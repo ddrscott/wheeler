@@ -11,3 +11,6 @@
 # project files
 *.iml
 .idea
+
+# don't save random index files
+index.txt

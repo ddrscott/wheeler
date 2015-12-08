@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+
+require 'bundler/setup'
+require 'wheeler'
+require 'pry'
+
+include Wheeler
+
+max_words = ARGV.shift || raise('first arg should be max_words')
+
+map_phrases(ARGF, max_words.to_i)

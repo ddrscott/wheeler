@@ -1,38 +1,51 @@
 # Wheeler
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/wheeler`. To experiment with that code, run `bin/console` for an interactive prompt.
+This is a map/reduce proof of concept with a little bit of fun thrown in. 
 
-TODO: Delete this and the text above, and describe your gem
+Wheeler is a naive Wheel of Fortune solver. It does this by indexing sampled
+text from where ever into every possible contiguous combination of words up
+to a max phrase length.
 
-## Installation
+The mapper in this project is `./bin/phrases`. Again, this is a naive program.
+The phrase parser don't use any NLP or grammar logic. It simply splits words
+by spaces, period, and double quotes. After splitting it outputs joined sets
+of those words in descending word count.
 
-Add this line to your application's Gemfile:
+The reduce is `./bin/count`. It simply prepends a count each line from the
+mapping phase. *Tt's critical* to pre-sort the mapped phrases prior to
+reducing. Therefore, we pipe the mapper to `sort` prior to using `./bin/count`
 
-```ruby
-gem 'wheeler'
-```
 
-And then execute:
+## Build Index, 1-Liner
 
-    $ bundle
+    # one-liner
+    $ ./bin/phrases 10 samples/adventure_of_the_speckled_band.txt | sort | ./bin/count | sort -t '|' -k 1n > index.txt
+    
+## Build Index, Usage Step by Step
 
-Or install it yourself as:
+    # Map text to phrases
+    $ ./bin/phrases 10 samples/adventure_of_the_speckled_band.txt > phrases-unsorted.txt
+    
+    # Sort thee mapped phraes
+    $ sort phrases-unsorted.txt > phrases-sorted.txt
+     
+    # Reduce to counts
+    $ ./bin/count phrases-sorted.txt > counts.txt
+    
+    # sort the counts infrequent to frequent
+    $ sort -t '|' -k 1n counts.txt > index.txt
 
-    $ gem install wheeler
+    # view index
+    $ less index.txt
 
-## Usage
+## Solve a Puzzle
 
-TODO: Write usage instructions here
-
-## Development
-
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
-
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+    # Using `grep`. How clever of us!
+    $ grep -e '|1 10|. .........R' index.txt
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/wheeler.
+Bug reports and pull requests are welcome on GitHub at https://github.com/ddrscott/wheeler.
 
 
 ## License
