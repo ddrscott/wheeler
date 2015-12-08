@@ -45,6 +45,20 @@ reducing. Therefore, we pipe the mapper to `sort` prior to using `./bin/count`
     #    1|4 2 7|BAND OF GYPSIES
     #  matches: 1
 
+## Use an English Dictionary
+    
+    # Make the Index
+    $ curl http://www.gutenberg.org/ebooks/29765 > dict.txt
+    $ ./bin/phrases 10 dict.txt > dict.phrase
+    $ sort dict.phrases > dict.sorted
+    $ ./bin/count dict.sorted > dict.idx
+    
+    # Use the Index
+    $ ./bin/guess.rb '_ C__C______' index.txt
+    #  ... grepping for: /\|1 11\|. C..C....../
+    #    1|1 11|A CALCULATOR.
+    #  matches: 1
+
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/ddrscott/wheeler.
