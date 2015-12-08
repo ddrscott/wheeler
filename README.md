@@ -40,8 +40,10 @@ reducing. Therefore, we pipe the mapper to `sort` prior to using `./bin/count`
 
 ## Solve a Puzzle
 
-    # Using `grep`. How clever of us!
-    $ grep -e '|1 10|. .........R' index.txt
+    $ ./bin/guess.rb '____ __ _____ES' index.txt
+    #  ... grepping for: /\|4 2 7\|.... .. .....ES/
+    #    1|4 2 7|BAND OF GYPSIES
+    #  matches: 1
 
 ## Contributing
 
