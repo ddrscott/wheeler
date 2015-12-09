@@ -12,7 +12,7 @@ module Wheeler
     # break on spaces instead of \n
     io.each_line(' ') do |line|
       # alphas with quote and period. We'll use the period as a hint for phrasing
-      line.scan(/([a-zA-Z'.]+)/).each do |word, _|
+      line.scan(/\b([a-zA-Z'.]+)\b/).each do |word, _|
         block.call word.upcase
       end
     end
@@ -51,7 +51,7 @@ module Wheeler
 
   def remove_last_punctuation_if_needed(words)
     last_char = words.last[-1]
-    if last_char == ',' or last_char == '.' or last_char == ';'
+    if last_char == ',' or last_char == ';'
       words[-1] = words[0..-2]
     end
     words
@@ -84,6 +84,47 @@ module Wheeler
     end
   end
 
+  def throttle(duration=0.1, &block)
+    @last_time ||= Time.now
+    if @last_time and (Time.now - duration) > @last_time
+      block.call
+      @last_time = Time.now
+    end
+  end
+
+  def reduce_fs(io)
+    last_sizes = nil
+    texts = []
+
+    io.each_line do |line|
+
+      sizes, text = *line.split('|')
+
+      if last_sizes and sizes != last_sizes
+        write_sizes(last_sizes, texts)
+        texts.clear
+      end
+
+      text = text[0..-2] # strip new line
+      throttle{print "\e[0K#{sizes}|#{text}\r"}
+      if texts.last != text
+        texts << text
+      end
+
+      last_sizes = sizes
+    end
+
+    if texts.any?
+      write_sizes(last_sizes, texts)
+    end
+  end
+
+  def write_sizes(sizes, texts)
+    idx_path = ".index/#{sizes.gsub(' ', '/')}"
+    FileUtils.mkdir_p idx_path
+    File.open("#{idx_path}/phrases", 'w') { |f| f << texts.join("\n") }
+  end
+
   def print_count(count, line)
     print('%3d' % count)
     print('|')
@@ -91,7 +132,7 @@ module Wheeler
   end
 
   # @param puzzle [String] Known letters in their position and `_` underscore the unknown letters
-  def guess(puzzle, index)
+  def guess(puzzle)
     words = []
     # split up into words
     puzzle.split(/\s+/).each do |w|
@@ -99,16 +140,26 @@ module Wheeler
       words << underscore_to_dots
     end
 
-    matcher = /\|#{word_sizes(words)}\|#{words * ' '}/
-    puts "... grepping for: #{matcher.inspect}"
-    count_matches = 0
-    index.each_line do |line|
-      if line =~ matcher
-        puts line
-        count_matches += 1
+    sizes = words.map { |m| m.size }
+    idx_path = ".index/#{sizes * '/'}"
+    phrase_path = "#{idx_path}/phrases"
+
+    matcher = /#{words * ' '}/
+    puts "[#{phrase_path}] searching for: #{matcher.inspect}"
+
+    if File.file?(phrase_path)
+      count_matches = 0
+      IO.foreach(phrase_path) do |line|
+        line = line[0..-2]
+        if line =~ matcher
+          puts "    #{line}"
+          count_matches += 1
+        end
       end
+      puts "matches: #{count_matches}"
+      count_matches
+    else
+      puts "No phrases in #{idx_path}"
     end
-    puts "matches: #{count_matches}"
-    count_matches
   end
 end
