@@ -2,16 +2,18 @@ require 'wheeler/version'
 
 module Wheeler
 
+  def test
+    each_phrase('a b. c d', 10) do |words|
+      puts words.join ' '
+    end
+  end
+
   def each_word(io, &block)
-    io.each_line('.') do |line|
-      line.split(/[\s\n"]+/).each do |word|
-        stripped = word.strip
-        if stripped[-1] == '.'
-          stripped = stripped[0..-2]
-        end
-        if stripped.size > 0
-          block.call stripped.upcase
-        end
+    # break on spaces instead of \n
+    io.each_line(' ') do |line|
+      # alphas with quote and period. We'll use the period as a hint for phrasing
+      line.scan(/([a-zA-Z'.]+)/).each do |word, _|
+        block.call word.upcase
       end
     end
   end
@@ -20,7 +22,15 @@ module Wheeler
     words = []
     each_word(io) do |word|
       words << word
-      if words.length >= max_words
+      if word[-1] == '.'
+        # remove period
+        words[-1] = words[-1][0..-2]
+
+        unroll_words(words, &block)
+
+        # we can start a new phrase by resetting the words
+        words.clear
+      elsif words.length >= max_words
         unroll_words(words, &block)
       end
     end
@@ -49,7 +59,6 @@ module Wheeler
 
   def map_phrases(io, max_words)
     each_phrase(io, max_words) do |words|
-      words = remove_last_punctuation_if_needed(words)
       row = [
           word_sizes(words),
           words * ' '
@@ -85,7 +94,7 @@ module Wheeler
   def guess(puzzle, index)
     words = []
     # split up into words
-    each_word(puzzle) do |w|
+    puzzle.split(/\s+/).each do |w|
       underscore_to_dots = w.gsub('_', '.').upcase
       words << underscore_to_dots
     end
