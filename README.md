@@ -26,7 +26,7 @@ reducing. Therefore, we pipe the mapper to `sort` prior to using `./bin/count`
     # Map text to phrases
     $ ./bin/phrases 10 samples/adventure_of_the_speckled_band.txt > phrases-unsorted.txt
     
-    # Sort thee mapped phraes
+    # Sort the mapped phrases
     $ sort phrases-unsorted.txt > phrases-sorted.txt
      
     # Reduce to counts
