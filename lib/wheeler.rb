@@ -2,17 +2,11 @@ require 'wheeler/version'
 
 module Wheeler
 
-  def test
-    each_phrase('a b. c d', 10) do |words|
-      puts words.join ' '
-    end
-  end
-
   def each_word(io, &block)
     # break on spaces instead of \n
     io.each_line(' ') do |line|
       # alphas with quote and period. We'll use the period as a hint for phrasing
-      line.scan(/\b([a-zA-Z'.]+)\b/).each do |word, _|
+      line.scan(/\b([[:word:]]+)\b/).each do |word, _|
         block.call word.upcase
       end
     end
@@ -26,21 +20,21 @@ module Wheeler
         # remove period
         words[-1] = words[-1][0..-2]
 
-        unroll_words(words, &block)
+        cascade_words(words, &block)
 
         # we can start a new phrase by resetting the words
         words.clear
       elsif words.length >= max_words
-        unroll_words(words, &block)
+        cascade_words(words, &block)
       end
     end
-    unroll_words(words, &block)
+    cascade_words(words, &block)
   end
 
-  def unroll_words(words, &block)
+  def cascade_words(words, &block)
     len = words.size
     len.times do |i|
-      block.call words[i..len]
+      block.call words[0..i]
     end
     words.shift
   end
