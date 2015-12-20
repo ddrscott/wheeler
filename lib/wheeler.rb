@@ -2,6 +2,8 @@ require 'wheeler/version'
 
 module Wheeler
 
+  INDEX_PATH = '.index'
+
   def each_word(io, &block)
     # break on spaces instead of \n
     io.each_line(' ') do |line|
@@ -62,22 +64,7 @@ module Wheeler
     end
   end
 
-  def reduce_count(io)
-    last_line = nil
-    count = 0
-    io.each_line do |line|
-      count += 1
-      if last_line and line != last_line
-        print_count(count, last_line)
-        count = 0
-      end
-      last_line = line
-    end
-    if last_line and count > 0
-      print_count(count, last_line)
-    end
-  end
-
+  # ensure the block is called at most once per duration
   def throttle(duration=0.1, &block)
     @last_time ||= Time.now
     if @last_time and (Time.now - duration) > @last_time
@@ -94,49 +81,39 @@ module Wheeler
 
       sizes, text = *line.split('|')
 
+      # write out when the size of the words changes
       if last_sizes and sizes != last_sizes
         write_sizes(last_sizes, texts)
         texts.clear
       end
 
-      text = text[0..-2] # strip new line
-      throttle{print "\e[0K#{sizes}|#{text}\r"}
+      text = text[0..-2]                                 # strip new line
+      throttle{$stderr.print "\e[0K#{sizes}|#{text}\r"}  # some debug output
       if texts.last != text
-        texts << text
+        texts << text           # text that matches the word size pattern
       end
 
       last_sizes = sizes
     end
 
-    if texts.any?
+    if texts.any?          # make sure we write out the remaining phrases
       write_sizes(last_sizes, texts)
     end
   end
 
   def write_sizes(sizes, texts)
-    idx_path = ".index/#{sizes.gsub(' ', '/')}"
+    idx_path = "#{INDEX_PATH}/#{sizes.gsub(' ', '/')}"
     FileUtils.mkdir_p idx_path
     File.open("#{idx_path}/phrases", 'w') { |f| f << texts.join("\n") }
   end
 
-  def print_count(count, line)
-    print('%3d' % count)
-    print('|')
-    puts(line)
-  end
-
   # @param puzzle [String] Known letters in their position and `_` underscore the unknown letters
   def guess(puzzle)
-    words = []
-    # split up into words
-    puzzle.split(/\s+/).each do |w|
-      underscore_to_dots = w.gsub('_', '.').upcase
-      words << underscore_to_dots
-    end
+    # split up into words and replace _ with dot
+    words = puzzle.split(/\s+/).map{|w| w.gsub('_', '.').upcase}
 
-    sizes = words.map { |m| m.size }
-    idx_path = ".index/#{sizes * '/'}"
-    phrase_path = "#{idx_path}/phrases"
+    # Example: "_ ____ ____" should constuct `.index/1/4/4/phrases`
+    phrase_path = "#{INDEX_PATH}/#{words.map(&:size) * '/'}/phrases"
 
     matcher = /#{words * ' '}/
     puts "[#{phrase_path}] searching for: #{matcher.inspect}"
@@ -144,16 +121,16 @@ module Wheeler
     if File.file?(phrase_path)
       count_matches = 0
       IO.foreach(phrase_path) do |line|
-        line = line[0..-2]
+        line = line[0..-2]                # omit the "\n" at the end
         if line =~ matcher
-          puts "    #{line}"
+          puts "    #{line}"              # emit the matching phrase
           count_matches += 1
         end
       end
       puts "matches: #{count_matches}"
       count_matches
     else
-      puts "No phrases in #{idx_path}"
+      puts "Phrases not found in #{phrase_path}"
     end
   end
 end
