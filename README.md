@@ -11,39 +11,54 @@ The phrase parser don't use any NLP or grammar logic. It simply splits words
 by spaces, period, and double quotes. After splitting it outputs joined sets
 of those words in descending word count.
 
-The reduce is `./bin/count`. It simply prepends a count each line from the
-mapping phase. *Tt's critical* to pre-sort the mapped phrases prior to
-reducing. Therefore, we pipe the mapper to `sort` prior to using `./bin/count`
+The reducer is `./bin/reduce_fs`. It build the phrase index into the `.index`
+directory inside this project. Maybe we'll make it an arg in the future.
+The index structure is:
+  1st word size/2nd word size/3rd word size/etc.../phrases
 
+So for the phrase: "I love cats". An index entry would be written into
+`.index/1/4/4/phrases`. The contents of phrases would be 'I LOVE CATS'
+
+After the index are built, the guess matching is almost trivial.
+
+1. receive a puzzle with underscores and known letters. For example: `_ ____ ___s`
+2. get the word counts of the puzzle. 1, 4, 4.
+3. find the phrases file based on the word counts. `.index/1/4/4/phrases`
+4. perform a simple pattern match in that file. `grep -e '. .... ....' .index/1/4/4/phrases`
+
+The `bin/guess` script will do steps 2-4 automatically: `bin/guess '_ ____ ___s'`
+
+The more sample texts which are index, the better chance of solving any given
+puzzle. This is only as good as the index it compiles.
 
 ## Build Index, 1-Liner
 
     # one-liner
-    $ ./bin/phrases 10 samples/adventure_of_the_speckled_band.txt | sort | ./bin/count | sort -t '|' -k 1n > index.txt
+    $ ./bin/phrases 5 samples/adventure_of_the_speckled_band.txt | sort | ./bin/reduce_fs
     
 ## Build Index, Usage Step by Step
 
     # Map text to phrases
-    $ ./bin/phrases 10 samples/adventure_of_the_speckled_band.txt > phrases-unsorted.txt
+    $ ./bin/phrases 5 samples/adventure_of_the_speckled_band.txt > phrases-unsorted.txt
     
     # Sort the mapped phrases
     $ sort phrases-unsorted.txt > phrases-sorted.txt
      
     # Reduce to counts
-    $ ./bin/count phrases-sorted.txt > counts.txt
+    $ ./bin/reduce_fs phrases-sorted.txt
     
-    # sort the counts infrequent to frequent
-    $ sort -t '|' -k 1n counts.txt > index.txt
-
-    # view index
-    $ less index.txt
+    # view phrase indexes
+    $ find .index -name phrases
+    
+    # view contents of a phrase
+    $ less .index/9/8/4/9/3/phrases
 
 ## Solve a Puzzle
 
-    $ ./bin/guess.rb '____ __ _____ES' index.txt
-    #  ... grepping for: /\|4 2 7\|.... .. .....ES/
-    #    1|4 2 7|BAND OF GYPSIES
-    #  matches: 1
+    $ ./bin/guess '____ __ _____ES'
+    # [.index/4/2/7/phrases] searching for: /.... .. .....ES/
+    #    BAND OF GYPSIES
+    # matches: 1
 
 ## Use an English Dictionary
     
@@ -51,13 +66,14 @@ reducing. Therefore, we pipe the mapper to `sort` prior to using `./bin/count`
     $ curl http://www.gutenberg.org/ebooks/29765 > dict.txt
     $ ./bin/phrases 10 dict.txt > dict.phrase
     $ sort dict.phrases > dict.sorted
-    $ ./bin/count dict.sorted > dict.idx
+    $ ./bin/reduce_fs dict.sorted
     
     # Use the Index
-    $ ./bin/guess.rb '_ C__C______' index.txt
+    $ ./bin/guess '_ C__C______' index.txt
     #  ... grepping for: /\|1 11\|. C..C....../
     #    1|1 11|A CALCULATOR.
     #  matches: 1
+
 
 ## Contributing
 
