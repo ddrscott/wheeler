@@ -55,7 +55,7 @@ puzzle. This is only as good as the index it compiles.
 
 ## Solve a Puzzle
 
-    $ /bin/guess '____ __ _____ES'
+    $ ./bin/guess '____ __ _____ES'
     # grep --color=always -e '.... .. .....ES' .index/4/2/7/phrases
     # BAND OF GYPSIES
 
