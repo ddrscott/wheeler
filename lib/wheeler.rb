@@ -115,21 +115,10 @@ module Wheeler
     # Example: "_ ____ ____" should constuct `.index/1/4/4/phrases`
     phrase_path = "#{INDEX_PATH}/#{words.map(&:size) * '/'}/phrases"
 
-    matcher = /#{words * ' '}/
-    puts "[#{phrase_path}] searching for: #{matcher.inspect}"
-
-    if File.file?(phrase_path)
-      count_matches = 0
-      IO.foreach(phrase_path) do |line|
-        line = line[0..-2]                # omit the "\n" at the end
-        if line =~ matcher
-          puts "    #{line}"              # emit the matching phrase
-          count_matches += 1
-        end
-      end
-      puts "matches: #{count_matches}"
-      count_matches
-    else
+    cmd = "grep --color=always -e '#{words * ' '}' #{phrase_path}"
+    puts cmd
+    puts `#{cmd}`
+    if $?.exitstatus == 1
       puts "Phrases not found in #{phrase_path}"
     end
   end

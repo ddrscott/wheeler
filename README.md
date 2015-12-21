@@ -55,25 +55,32 @@ puzzle. This is only as good as the index it compiles.
 
 ## Solve a Puzzle
 
-    $ ./bin/guess '____ __ _____ES'
-    # [.index/4/2/7/phrases] searching for: /.... .. .....ES/
-    #    BAND OF GYPSIES
-    # matches: 1
+    $ /bin/guess '____ __ _____ES'
+    # grep --color=always -e '.... .. .....ES' .index/4/2/7/phrases
+    # BAND OF GYPSIES
+
+## Use a sample dictionary
+    # Map text to phrases
+    $ ./bin/phrases 5 samples/dict.txt > phrases-unsorted.txt
+    
+    # Sort the mapped phrases
+    $ sort phrases-unsorted.txt > phrases-sorted.txt
+     
+    # Reduce to counts
+    $ ./bin/reduce_fs phrases-sorted.txt
 
 ## Use an English Dictionary
     
     # Make the Index
-    $ curl http://www.gutenberg.org/ebooks/29765 > dict.txt
-    $ ./bin/phrases 10 dict.txt > dict.phrase
-    $ sort dict.phrases > dict.sorted
-    $ ./bin/reduce_fs dict.sorted
+    $ curl http://www.gutenberg.org/ebooks/29765 > dictionary.txt
+    $ ./bin/phrases 5 dictionary.txt > phrases-unsorted.txt
     
-    # Use the Index
-    $ ./bin/guess '_ C__C______' index.txt
-    #  ... grepping for: /\|1 11\|. C..C....../
-    #    1|1 11|A CALCULATOR.
-    #  matches: 1
-
+    # Sort the mapped phrases
+    $ sort phrases-unsorted.txt > phrases-sorted.txt
+     
+    # Reduce to counts
+    $ ./bin/reduce_fs phrases-sorted.txt
+    
 
 ## Contributing
 
