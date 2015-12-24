@@ -39,13 +39,13 @@ puzzle. This is only as good as the index it compiles.
 ## Build Index, Usage Step by Step
 
     # Map text to phrases
-    $ ./bin/phrases 5 samples/adventure_of_the_speckled_band.txt > phrases-unsorted.txt
+    $ ./bin/phrases 5 samples/adventure_of_the_speckled_band.txt > tmp/phrases-unsorted.txt
     
     # Sort the mapped phrases
-    $ sort phrases-unsorted.txt > phrases-sorted.txt
+    $ sort tmp/phrases-unsorted.txt > tmp/phrases-sorted.txt
      
     # Reduce to counts
-    $ ./bin/reduce_fs phrases-sorted.txt
+    $ ./bin/reduce_fs tmp/phrases-sorted.txt
     
     # view phrase indexes
     $ find .index -name phrases
@@ -61,25 +61,25 @@ puzzle. This is only as good as the index it compiles.
 
 ## Use a sample dictionary
     # Map text to phrases
-    $ ./bin/phrases 5 samples/dict.txt > phrases-unsorted.txt
+    $ ./bin/phrases 5 samples/dict.txt > tmp/phrases-unsorted.txt
     
     # Sort the mapped phrases
-    $ sort phrases-unsorted.txt > phrases-sorted.txt
+    $ sort tmp/phrases-unsorted.txt > tmp/phrases-sorted.txt
      
     # Reduce to counts
-    $ ./bin/reduce_fs phrases-sorted.txt
+    $ ./bin/reduce_fs tmp/phrases-sorted.txt
 
 ## Use full English Dictionary
     
     # Make the Index
-    $ curl http://www.gutenberg.org/ebooks/29765 > dictionary.txt
-    $ ./bin/phrases 5 dictionary.txt > phrases-unsorted.txt
+    $ curl http://www.gutenberg.org/ebooks/29765 > tmp/dictionary.txt
+    $ ./bin/phrases 5 tmp/dictionary.txt > tmp/phrases-unsorted.txt
     
     # Sort the mapped phrases
-    $ sort phrases-unsorted.txt > phrases-sorted.txt
+    $ sort tmp/phrases-unsorted.txt > tmp/phrases-sorted.txt
      
     # Reduce to counts
-    $ ./bin/reduce_fs phrases-sorted.txt
+    $ ./bin/reduce_fs tmp/phrases-sorted.txt
     
 
 ## Contributing
