@@ -69,7 +69,7 @@ puzzle. This is only as good as the index it compiles.
     # Reduce to counts
     $ ./bin/reduce_fs phrases-sorted.txt
 
-## Use an English Dictionary
+## Use full English Dictionary
     
     # Make the Index
     $ curl http://www.gutenberg.org/ebooks/29765 > dictionary.txt
