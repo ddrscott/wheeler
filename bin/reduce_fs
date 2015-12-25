@@ -1,9 +1,0 @@
-#!/usr/bin/env ruby
-
-require 'bundler/setup'
-require 'wheeler'
-require 'pry'
-
-include Wheeler
-
-reduce_fs(ARGF)

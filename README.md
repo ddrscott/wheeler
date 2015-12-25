@@ -6,12 +6,12 @@ Wheeler is a naive Wheel of Fortune solver. It does this by indexing sampled
 text from where ever into every possible contiguous combination of words up
 to a max phrase length.
 
-The mapper in this project is `./bin/phrases`. Again, this is a naive program.
+The mapper in this project is `wheeler phrases`. Again, this is a naive program.
 The phrase parser don't use any NLP or grammar logic. It simply splits words
 by spaces, period, and double quotes. After splitting it outputs joined sets
 of those words in descending word count.
 
-The reducer is `./bin/reduce_fs`. It build the phrase index into the `.index`
+The reducer is `wheeler reduce`. It build the phrase index into the `.index`
 directory inside this project. Maybe we'll make it an arg in the future.
 The index structure is:
   1st word size/2nd word size/3rd word size/etc.../phrases
@@ -26,26 +26,21 @@ After the index are built, the guess matching is almost trivial.
 3. find the phrases file based on the word counts. `.index/1/4/4/phrases`
 4. perform a simple pattern match in that file. `grep -e '. .... ....' .index/1/4/4/phrases`
 
-The `bin/guess` script will do steps 2-4 automatically: `bin/guess '_ ____ ___s'`
+The `wheeler guess` script will do steps 2-4 automatically: `wheeler guess '_ ____ ___s'`
 
-The more sample texts which are index, the better chance of solving any given
-puzzle. This is only as good as the index it compiles.
+The more texts indexed, the better chance of solving any given puzzle. This solver 
+is only as good as the index it compiles.
 
-## Build Index, 1-Liner
-
-    # one-liner
-    $ ./bin/phrases 5 samples/adventure_of_the_speckled_band.txt | sort | ./bin/reduce_fs
-    
 ## Build Index, Usage Step by Step
 
     # Map text to phrases
-    $ ./bin/phrases 5 samples/adventure_of_the_speckled_band.txt > tmp/phrases-unsorted.txt
+    $ wheeler phrases samples/adventure_of_the_speckled_band.txt 5 > tmp/phrases-unsorted.txt
     
     # Sort the mapped phrases
     $ sort tmp/phrases-unsorted.txt > tmp/phrases-sorted.txt
      
-    # Reduce to counts
-    $ ./bin/reduce_fs tmp/phrases-sorted.txt
+    # Reduce to counts, this writes results to .index
+    $ wheeler reduce tmp/phrases-sorted.txt
     
     # view phrase indexes
     $ find .index -name phrases
@@ -55,31 +50,31 @@ puzzle. This is only as good as the index it compiles.
 
 ## Solve a Puzzle
 
-    $ ./bin/guess '____ __ _____ES'
+    $ wheeler guess '____ __ _____ES'
     # grep --color=always -e '.... .. .....ES' .index/4/2/7/phrases
     # BAND OF GYPSIES
 
 ## Use a sample dictionary
     # Map text to phrases
-    $ ./bin/phrases 5 samples/dict.txt > tmp/phrases-unsorted.txt
+    $ wheeler phrases samples/dict.txt 5 > tmp/phrases-unsorted.txt
     
     # Sort the mapped phrases
     $ sort tmp/phrases-unsorted.txt > tmp/phrases-sorted.txt
      
     # Reduce to counts
-    $ ./bin/reduce_fs tmp/phrases-sorted.txt
+    $ wheeler reduce tmp/phrases-sorted.txt
 
 ## Use full English Dictionary
     
     # Make the Index
     $ curl http://www.gutenberg.org/ebooks/29765 > tmp/dictionary.txt
-    $ ./bin/phrases 5 tmp/dictionary.txt > tmp/phrases-unsorted.txt
+    $ wheeler phrases tmp/dictionary.txt 5 > tmp/phrases-unsorted.txt
     
     # Sort the mapped phrases
     $ sort tmp/phrases-unsorted.txt > tmp/phrases-sorted.txt
      
     # Reduce to counts
-    $ ./bin/reduce_fs tmp/phrases-sorted.txt
+    $ wheeler reduce tmp/phrases-sorted.txt
     
 
 ## Contributing
