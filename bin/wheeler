@@ -14,14 +14,14 @@ class WheelerCLI < Thor
     end
   end
 
-  desc 'index SRC built by phrases', 'places uniq phrases into .index directory based on word sizes'
+  desc 'reduce SRC', 'reduces sorted phrases into .index directory based on word sizes'
   def reduce(src)
     File.open(src, 'r') do |f|
       reduce_fs(f)
     end
   end
 
-  desc 'guess PUZZLE', 'guess PUZZLE. PUZZLE should use _ (underscore) or . (dot) for unknown letters'
+  desc 'guess PUZZLE', 'guesses possible PUZZLE solutions by scanning .index. Use _ (underscore) or . (dot) for unknown letters'
   def guess(puzzle)
     super(puzzle)
   end
